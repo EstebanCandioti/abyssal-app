@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/theme';
 
@@ -21,7 +21,11 @@ function splitTime(value: string) {
 
 export function TimePicker({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
+  const { width, height } = useWindowDimensions();
   const selected = useMemo(() => splitTime(value), [value]);
+  const panelWidth = Math.min(width - 32, 360);
+  const columnsHeight = Math.min(Math.max(height * 0.34, 220), 320);
+  const optionHeight = Math.min(Math.max(height * 0.052, 38), 46);
 
   const updateTime = (hour: string, minute: string) => {
     onChange(`${hour}:${minute}`);
@@ -37,7 +41,7 @@ export function TimePicker({ value, onChange }: Props) {
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <View style={styles.overlay}>
-          <View style={styles.panel}>
+          <View style={[styles.panel, { width: panelWidth, maxHeight: height * 0.78 }]}>
             <View style={styles.header}>
               <Text style={styles.title}>Elegir horario</Text>
               <Pressable style={styles.closeButton} onPress={() => setOpen(false)}>
@@ -45,17 +49,19 @@ export function TimePicker({ value, onChange }: Props) {
               </Pressable>
             </View>
 
-            <View style={styles.columns}>
+            <View style={[styles.columns, { height: columnsHeight }]}>
               <ScrollView style={styles.column} contentContainerStyle={styles.columnContent}>
                 {hours.map((hour) => {
                   const active = hour === selected.hour;
                   return (
                     <Pressable
                       key={hour}
-                      style={[styles.option, active && styles.optionActive]}
+                      style={[styles.option, { minHeight: optionHeight }, active && styles.optionActive]}
                       onPress={() => updateTime(hour, selected.minute)}
                     >
-                      <Text style={[styles.optionText, active && styles.optionTextActive]}>{hour}</Text>
+                      <Text style={[styles.optionText, active && styles.optionTextActive]} numberOfLines={1} adjustsFontSizeToFit>
+                        {hour}
+                      </Text>
                     </Pressable>
                   );
                 })}
@@ -69,10 +75,12 @@ export function TimePicker({ value, onChange }: Props) {
                   return (
                     <Pressable
                       key={minute}
-                      style={[styles.option, active && styles.optionActive]}
+                      style={[styles.option, { minHeight: optionHeight }, active && styles.optionActive]}
                       onPress={() => updateTime(selected.hour, minute)}
                     >
-                      <Text style={[styles.optionText, active && styles.optionTextActive]}>{minute}</Text>
+                      <Text style={[styles.optionText, active && styles.optionTextActive]} numberOfLines={1} adjustsFontSizeToFit>
+                        {minute}
+                      </Text>
                     </Pressable>
                   );
                 })}
@@ -80,7 +88,7 @@ export function TimePicker({ value, onChange }: Props) {
             </View>
 
             <Pressable style={styles.confirmButton} onPress={() => setOpen(false)}>
-              <Text style={styles.confirmText}>Listo</Text>
+              <Text style={styles.confirmText} numberOfLines={1} adjustsFontSizeToFit>Listo</Text>
             </Pressable>
           </View>
         </View>
@@ -111,13 +119,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
     backgroundColor: 'rgba(2, 10, 16, 0.76)'
   },
   panel: {
-    width: '100%',
     maxWidth: 360,
-    maxHeight: 520,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.background.border,
@@ -145,7 +152,6 @@ const styles = StyleSheet.create({
     borderColor: colors.background.border
   },
   columns: {
-    height: 300,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12
@@ -163,7 +169,6 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   },
   option: {
-    minHeight: 42,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,

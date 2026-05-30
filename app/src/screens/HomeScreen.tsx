@@ -231,9 +231,11 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10
+    gap: 10,
+    paddingHorizontal: 20
   },
   whale: {
     color: colors.text.accent,
@@ -241,16 +243,19 @@ const styles = StyleSheet.create({
     fontFamily: 'serif'
   },
   emptyTitle: {
-    maxWidth: 320,
+    width: '100%',
     color: colors.text.primary,
     fontSize: 18,
     fontWeight: '700',
-    textAlign: 'center'
+    textAlign: 'center',
+    flexWrap: 'wrap'
   },
   emptyText: {
+    width: '100%',
     color: colors.text.secondary,
     fontSize: 14,
-    textAlign: 'center'
+    textAlign: 'center',
+    flexWrap: 'wrap'
   },
   textButton: {
     minHeight: 42,

@@ -4,6 +4,7 @@
     "slug": "abyssal",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./src/assets/app-icon.png",
     "userInterfaceStyle": "dark",
     "assetBundlePatterns": [
       "**/*"
@@ -13,8 +14,10 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./src/assets/app-icon.png",
         "backgroundColor": "#0a1628"
-      }
+      },
+      "package": "com.estebancandioti.abyssal"
     },
     "web": {
       "bundler": "metro"
@@ -28,6 +31,11 @@
           "defaultChannel": "abyssal-reminders"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "425a4e71-f135-4627-8410-5e81f2aa0b4e"
+      }
+    }
   }
 }

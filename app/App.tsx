@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,8 @@ import { AllRemindersScreen } from './src/screens/AllRemindersScreen';
 import { CreateReminderScreen } from './src/screens/CreateReminderScreen';
 import { ReminderDetailScreen } from './src/screens/ReminderDetailScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { api } from './src/services/api';
+import { syncLocalReminderNotifications } from './src/services/localNotifications';
 
 type Screen = MainTab | 'create' | 'detail';
 
@@ -18,11 +20,26 @@ export default function App() {
   const [selectedReminderId, setSelectedReminderId] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const syncNotifications = useCallback(async () => {
+    try {
+      const settings = await api.getSettings();
+      const reminders = await api.getReminders();
+      await syncLocalReminderNotifications(reminders, settings.pushNotificationsEnabled);
+    } catch {
+      // La app no debe bloquear la UI si las notificaciones locales no estan disponibles.
+    }
+  }, []);
+
+  useEffect(() => {
+    void syncNotifications();
+  }, [syncNotifications]);
+
   const goActiveTabAndRefresh = useCallback(() => {
     setRefreshKey((current) => current + 1);
     setSelectedReminderId(null);
     setScreen(activeTab);
-  }, [activeTab]);
+    void syncNotifications();
+  }, [activeTab, syncNotifications]);
 
   const handleTabPress = useCallback((tab: MainTab) => {
     setActiveTab(tab);

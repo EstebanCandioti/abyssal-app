@@ -5,6 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/theme';
 import { BottomNav, type MainTab } from '../components/BottomNav';
 import { api, type Settings } from '../services/api';
+import {
+  clearLocalReminderNotifications,
+  ensureLocalNotificationPermission,
+  syncLocalReminderNotifications
+} from '../services/localNotifications';
 
 interface Props {
   onTabPress: (tab: MainTab) => void;
@@ -69,8 +74,26 @@ export function SettingsScreen({ onTabPress }: Props) {
       return;
     }
 
+    if (enabled) {
+      const permissionGranted = await ensureLocalNotificationPermission();
+      if (!permissionGranted) {
+        setError('Permiso de notificaciones denegado.');
+        return;
+      }
+    }
+
     setSettings({ ...previous, pushNotificationsEnabled: enabled });
-    await persistSettings({ pushNotificationsEnabled: enabled }).catch(() => setSettings(previous));
+    await persistSettings({ pushNotificationsEnabled: enabled })
+      .then(async () => {
+        if (!enabled) {
+          await clearLocalReminderNotifications();
+          return;
+        }
+
+        const reminders = await api.getReminders();
+        await syncLocalReminderNotifications(reminders, true);
+      })
+      .catch(() => setSettings(previous));
   };
 
   return (
@@ -107,7 +130,7 @@ export function SettingsScreen({ onTabPress }: Props) {
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
                   <Ionicons name="notifications-outline" size={18} color={colors.text.accent} />
-                  <Text style={styles.sectionTitle}>Notificaciones push</Text>
+                  <Text style={styles.sectionTitle}>Notificaciones locales</Text>
                 </View>
                 <Switch
                   value={settings.pushNotificationsEnabled}

@@ -20,7 +20,14 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "color": "#a8c8f0",
+          "defaultChannel": "abyssal-reminders"
+        }
+      ]
     ]
   }
 }

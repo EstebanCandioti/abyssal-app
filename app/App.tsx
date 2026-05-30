@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from './src/constants/theme';
@@ -13,6 +13,19 @@ import { api } from './src/services/api';
 import { syncLocalReminderNotifications } from './src/services/localNotifications';
 
 type Screen = MainTab | 'create' | 'detail';
+
+const textDefaults = Text as unknown as { defaultProps?: Record<string, unknown> };
+const textInputDefaults = TextInput as unknown as { defaultProps?: Record<string, unknown> };
+
+textDefaults.defaultProps = {
+  ...textDefaults.defaultProps,
+  maxFontSizeMultiplier: 1.15
+};
+
+textInputDefaults.defaultProps = {
+  ...textInputDefaults.defaultProps,
+  maxFontSizeMultiplier: 1.15
+};
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home');

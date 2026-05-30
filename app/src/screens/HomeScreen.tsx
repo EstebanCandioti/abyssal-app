@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
     fontFamily: 'serif'
   },
   emptyTitle: {
+    maxWidth: 320,
     color: colors.text.primary,
     fontSize: 18,
     fontWeight: '700',

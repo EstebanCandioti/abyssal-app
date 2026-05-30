@@ -30,7 +30,8 @@
           "color": "#a8c8f0",
           "defaultChannel": "abyssal-reminders"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {

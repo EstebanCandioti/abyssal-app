@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+*.local
+
+# Expo
+app/.expo/
+
+# Build output
+dist/
+app/dist/
+backend/dist/
+
+# Local databases
+backend/data/
+backend/*.sqlite
+backend/*.sqlite-journal
+
+# Accidental nested repo from local setup
+backend/.git/
+
+# IDE/system
+.idea/
+.DS_Store
+npm-debug.log*

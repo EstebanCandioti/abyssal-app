@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Asset } from 'expo-asset';
-import { SvgUri } from 'react-native-svg';
 import { colors } from '../constants/theme';
 import { AllRemindersBackground } from '../components/AllRemindersBackground';
 import { BottomNav, type MainTab } from '../components/BottomNav';
 import { ReminderCard } from '../components/ReminderCard';
 import { api, type Reminder } from '../services/api';
-
-const sherlockIconUri = Asset.fromModule(require('../assets/sherlock-holmes-svgrepo-com.svg')).uri;
 
 interface Props {
   onCreatePress: () => void;
@@ -64,7 +60,7 @@ export function AllRemindersScreen({ onCreatePress, onReminderPress, onTabPress 
       </View>
 
       <View style={styles.searchBox}>
-        <SvgUri uri={sherlockIconUri} width={18} height={18} />
+        <Image source={require('../assets/sherlock-holmes-svgrepo-com.png')} style={styles.searchIcon} resizeMode="contain" />
         <TextInput
           style={styles.searchInput}
           value={query}
@@ -159,6 +155,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.background.border,
     backgroundColor: colors.background.card
+  },
+  searchIcon: {
+    width: 18,
+    height: 18
   },
   searchInput: {
     flex: 1,

@@ -13,6 +13,9 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "http://10.0.2.2:3000"
+      },
       "android": {
         "buildType": "apk"
       }

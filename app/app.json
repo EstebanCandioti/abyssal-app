@@ -17,6 +17,7 @@
         "foregroundImage": "./src/assets/app-icon.png",
         "backgroundColor": "#0a1628"
       },
+      "usesCleartextTraffic": true,
       "package": "com.estebancandioti.abyssal"
     },
     "web": {

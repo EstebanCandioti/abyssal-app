@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { differenceInCalendarWeeks, differenceInDays, format, parseISO } from 'date-fns';
-import { db } from '../db/database.js';
+import { getOne, query } from '../db/database.js';
 import { getNowInTimezone } from '../dateUtils.js';
 import { mapReminder } from '../reminderMapper.js';
 import type { Reminder, ReminderRow, WeekDay } from '../types.js';
@@ -44,33 +44,33 @@ export function reminderMatchesDate(reminder: Reminder, date: Date) {
   return daysFromStart >= 0 && daysFromStart % reminder.frequencyInterval === 0;
 }
 
-function alreadySentToday(reminderId: number) {
-  const result = db.prepare(`
+async function alreadySentToday(reminderId: number) {
+  const result = await getOne<{ count: string }>(`
     SELECT COUNT(*) AS count
     FROM email_log
-    WHERE reminder_id = ? AND status = 'sent' AND date(sent_at) = date('now')
-  `).get(reminderId) as { count: number };
+    WHERE reminder_id = $1 AND status = 'sent' AND sent_at::date = now()::date
+  `, [reminderId]);
 
-  return result.count > 0;
+  return Number(result?.count ?? 0) > 0;
 }
 
-function insertEmailLog(
+async function insertEmailLog(
   reminderId: number,
   status: 'sent' | 'error',
   emailTo: string,
   providerId?: string,
   errorMessage?: string
 ) {
-  db.prepare(`
+  await query(`
     INSERT INTO email_log (reminder_id, status, email_to, provider_id, error_message)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(reminderId, status, emailTo, providerId ?? null, errorMessage ?? null);
+    VALUES ($1, $2, $3, $4, $5)
+  `, [reminderId, status, emailTo, providerId ?? null, errorMessage ?? null]);
 }
 
 export async function runSchedulerTick() {
   const now = getNowInTimezone();
   const currentTime = format(now, 'HH:mm');
-  const settings = getSettings();
+  const settings = await getSettings();
 
   if (lastEmailEnabledState !== settings.emailEnabled) {
     lastEmailEnabledState = settings.emailEnabled;
@@ -83,12 +83,12 @@ export async function runSchedulerTick() {
     return;
   }
 
-  const rows = db.prepare('SELECT * FROM reminders WHERE active = 1').all() as ReminderRow[];
+  const result = await query<ReminderRow>('SELECT * FROM reminders WHERE active = TRUE');
 
-  for (const row of rows) {
+  for (const row of result.rows) {
     const reminder = mapReminder(row);
 
-    if (reminder.time !== currentTime || alreadySentToday(reminder.id) || !reminderMatchesDate(reminder, now)) {
+    if (reminder.time !== currentTime || await alreadySentToday(reminder.id) || !reminderMatchesDate(reminder, now)) {
       continue;
     }
 
@@ -100,14 +100,14 @@ export async function runSchedulerTick() {
         frequencyType: reminder.frequencyType
       });
       const sentEmail = await sendReminderEmail(reminder, emailTo);
-      insertEmailLog(reminder.id, 'sent', emailTo, sentEmail?.id);
+      await insertEmailLog(reminder.id, 'sent', emailTo, sentEmail?.id);
       logger.info('Email de recordatorio enviado.', {
         reminderId: reminder.id,
         providerId: sentEmail?.id
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error desconocido';
-      insertEmailLog(reminder.id, 'error', process.env.USER_EMAIL ?? '', undefined, message);
+      await insertEmailLog(reminder.id, 'error', process.env.USER_EMAIL ?? '', undefined, message);
       logger.error(`Error enviando recordatorio ${reminder.id}.`, error);
     }
   }

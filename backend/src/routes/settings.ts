@@ -10,11 +10,11 @@ const updateSettingsSchema = z.object({
   pushNotificationsEnabled: z.boolean().optional()
 });
 
-settingsRouter.get('/', (_request, response) => {
-  response.json(getSettings());
+settingsRouter.get('/', async (_request, response) => {
+  response.json(await getSettings());
 });
 
-settingsRouter.put('/', (request, response) => {
+settingsRouter.put('/', async (request, response) => {
   const parsed = updateSettingsSchema.safeParse(request.body);
 
   if (!parsed.success) {
@@ -22,7 +22,7 @@ settingsRouter.put('/', (request, response) => {
     return;
   }
 
-  const updated = updateSettings(parsed.data);
+  const updated = await updateSettings(parsed.data);
   logger.info('Ajustes actualizados.', {
     emailEnabled: updated.emailEnabled,
     pushNotificationsEnabled: updated.pushNotificationsEnabled

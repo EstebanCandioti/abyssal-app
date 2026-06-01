@@ -22,12 +22,12 @@ export interface ReminderRow {
   description: string | null;
   time: string;
   frequency_type: FrequencyType;
-  frequency_days: string | null;
+  frequency_days: string | WeekDay[] | null;
   frequency_interval: number | null;
   frequency_start_date: string | null;
-  active: number;
-  created_at: string;
-  updated_at: string;
+  active: number | boolean;
+  created_at: string | Date;
+  updated_at: string | Date;
 }
 
 export interface Quote {
@@ -44,7 +44,7 @@ export interface Settings {
 
 export interface SettingsRow {
   email_destination: string;
-  email_enabled: number;
-  push_notifications_enabled: number;
-  updated_at: string;
+  email_enabled: number | boolean;
+  push_notifications_enabled: number | boolean;
+  updated_at: string | Date;
 }

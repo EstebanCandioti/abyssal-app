@@ -8,8 +8,6 @@ import { settingsRouter } from './routes/settings.js';
 import { startScheduler } from './services/scheduler.js';
 import { logger } from './logger.js';
 
-initializeSchema();
-
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
@@ -31,13 +29,23 @@ const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => 
 
 app.use(errorHandler);
 
-app.listen(port, () => {
-  logger.info('Abyssal backend iniciado.', {
-    port,
-    nodeEnv: process.env.NODE_ENV ?? 'development',
-    timezone: process.env.TIMEZONE ?? 'UTC',
-    resendFromConfigured: Boolean(process.env.RESEND_FROM),
-    userEmailConfigured: Boolean(process.env.USER_EMAIL)
+async function bootstrap() {
+  await initializeSchema();
+
+  app.listen(port, () => {
+    logger.info('Abyssal backend iniciado.', {
+      port,
+      nodeEnv: process.env.NODE_ENV ?? 'development',
+      timezone: process.env.TIMEZONE ?? 'UTC',
+      resendFromConfigured: Boolean(process.env.RESEND_FROM),
+      userEmailConfigured: Boolean(process.env.USER_EMAIL),
+      databaseConfigured: Boolean(process.env.DATABASE_URL)
+    });
+    startScheduler();
   });
-  startScheduler();
+}
+
+void bootstrap().catch((error) => {
+  logger.error('No se pudo iniciar Abyssal backend.', error);
+  process.exit(1);
 });

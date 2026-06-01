@@ -1,21 +1,21 @@
-import { db } from '../db/database.js';
+import { getOne, query } from '../db/database.js';
 import type { Settings, SettingsRow } from '../types.js';
 
 function mapSettings(row: SettingsRow): Settings {
   return {
     emailDestination: row.email_destination,
-    emailEnabled: Boolean(row.email_enabled),
-    pushNotificationsEnabled: Boolean(row.push_notifications_enabled),
-    updatedAt: row.updated_at
+    emailEnabled: row.email_enabled === true || row.email_enabled === 1,
+    pushNotificationsEnabled: row.push_notifications_enabled === true || row.push_notifications_enabled === 1,
+    updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at
   };
 }
 
-export function getSettings() {
-  const row = db.prepare(`
+export async function getSettings() {
+  const row = await getOne<SettingsRow>(`
     SELECT email_destination, email_enabled, push_notifications_enabled, updated_at
     FROM settings
     WHERE id = 1
-  `).get() as SettingsRow | undefined;
+  `);
 
   if (!row) {
     throw new Error('No se encontro la configuracion de Abyssal.');
@@ -24,22 +24,22 @@ export function getSettings() {
   return mapSettings(row);
 }
 
-export function updateSettings(input: Partial<Omit<Settings, 'updatedAt' | 'emailDestination'>>) {
-  const current = getSettings();
+export async function updateSettings(input: Partial<Omit<Settings, 'updatedAt' | 'emailDestination'>>) {
+  const current = await getSettings();
   const next = { ...current, ...input };
 
-  db.prepare(`
+  await query(`
     UPDATE settings
-    SET email_destination = ?,
-        email_enabled = ?,
-        push_notifications_enabled = ?,
-        updated_at = datetime('now')
+    SET email_destination = $1,
+        email_enabled = $2,
+        push_notifications_enabled = $3,
+        updated_at = now()
     WHERE id = 1
-  `).run(
+  `, [
     next.emailDestination.trim(),
-    next.emailEnabled ? 1 : 0,
-    next.pushNotificationsEnabled ? 1 : 0
-  );
+    next.emailEnabled,
+    next.pushNotificationsEnabled
+  ]);
 
   return getSettings();
 }

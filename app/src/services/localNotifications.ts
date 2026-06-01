@@ -98,7 +98,8 @@ async function scheduleReminderNotification(
       title: reminder.title,
       body: reminder.description || 'Abyssal detecto un recordatorio.',
       data: { reminderId: reminder.id },
-      sound: 'default'
+      sound: 'default',
+      ...(Platform.OS === 'android' ? { priority: Notifications.AndroidNotificationPriority.MAX } : {})
     },
     trigger: trigger as never
   });

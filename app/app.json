@@ -18,6 +18,9 @@
         "backgroundColor": "#0a1628"
       },
       "usesCleartextTraffic": true,
+      "permissions": [
+        "SCHEDULE_EXACT_ALARM"
+      ],
       "package": "com.estebancandioti.abyssal"
     },
     "web": {
